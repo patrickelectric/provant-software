@@ -25,7 +25,7 @@
 /* Private define ------------------------------------------------------------*/
 #define MODULE_PERIOD	   10//ms
 #define ESC_ON           1
-#define SERVO_ON         1
+#define SERVO_ON         0
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -116,23 +116,26 @@ void module_co_run()
     #endif
 
     /* Escrita dos escs */
-    #if ESC_ON
-      if (iInputData.receiverOutput.vrPot!=0)
-      {
+    #if 1
+      //if (iInputData.receiverOutput.vrPot!=0)
+      //{
         c_io_blctrl_setSpeed(0, 10  );
         c_common_utils_delayus(10);
         c_io_blctrl_setSpeed(1, 10 );
-      }
+      //}
+      /*
       else
       {
         c_io_blctrl_setSpeed(0, 0 );
         c_common_utils_delayus(10);
         c_io_blctrl_setSpeed(1, 0 );      
       }
+      */
 
-      c_io_blctrl_updateBuffer(1);
+      //c_io_blctrl_updateBuffer(1);
     #endif
 
+    /*
     oControlOutputData.actuation.servoPosition[0] = c_io_blctrl_readVoltage(1);
     oControlOutputData.actuation.servoPosition[1] = c_io_blctrl_readSpeed(1);
     oControlOutputData.actuation.escNewtons[0]    = 13.3;
@@ -154,6 +157,7 @@ void module_co_run()
     oControlOutputData.heartBeat                  = heartBeat;
     unsigned int timeNow=xTaskGetTickCount();
     oControlOutputData.cicleTime                  = timeNow - lastWakeTime;
+    */
 
     /* toggle pin for debug */
     //c_common_gpio_toggle(debugPin);
