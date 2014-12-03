@@ -31,7 +31,7 @@
 /* Private variables ---------------------------------------------------------*/
 portTickType lastWakeTime;
 pv_msg_input iInputData;
-pv_msg_controlOutput oControlOutputData; 
+pv_msg_controlOutput oControlOutputData;
 //GPIOPin debugPin;
 /* Inboxes buffers */
 
@@ -48,7 +48,7 @@ pv_msg_controlOutput oControlOutputData;
   * @param  None
   * @retval None
   */
-void module_co_init() 
+void module_co_init()
 {
 
   /* Inicializar os escs*/
@@ -84,15 +84,15 @@ void module_co_init()
   *
   * Interpreta o recebimento de PPM, calcula sinais de controle e os envia
   * via interface.
-  * Devido as diferenças do modelo matematica com a construção mecanica o sinal do angulo do servo direito deve 
+  * Devido as diferenças do modelo matematica com a construção mecanica o sinal do angulo do servo direito deve
   * ser adaptado.
   *
   */
-void module_co_run() 
+void module_co_run()
 {
   unsigned int heartBeat=0;
 
-  while(1) 
+  while(1)
   {
     /* Variavel para debug */
     heartBeat+=1;
@@ -128,7 +128,7 @@ void module_co_run()
       {
         c_io_blctrl_setSpeed(0, 0 );
         c_common_utils_delayus(10);
-        c_io_blctrl_setSpeed(1, 0 );      
+        c_io_blctrl_setSpeed(1, 0 );
       }
       */
 

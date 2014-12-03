@@ -81,7 +81,7 @@ void module_do_run()
     c_common_datapr_multwii_attitude(iInputData.attitude.roll*RAD_TO_DEG,iInputData.attitude.pitch*RAD_TO_DEG,iInputData.attitude.yaw*RAD_TO_DEG);
 		c_common_datapr_multwii2_rcNormalize(channel);
     c_common_datapr_multwii_altitude(iInputData.sonarOutput.altitude,0);
-    c_common_datapr_multwii_debug(iInputData.cicleTime,iControlOutputData.cicleTime,1,2);
+    c_common_datapr_multwii_debug(iInputData.heartBeat,iControlOutputData.heartBeat,1,heartBeat);
     c_common_datapr_multwii_sendstack(USART2);
   
     c_common_datapr_multwii2_sendControldatain(iControlOutputData.vantBehavior.rpy, iControlOutputData.vantBehavior.drpy, iControlOutputData.vantBehavior.xyz, iControlOutputData.vantBehavior.dxyz);
