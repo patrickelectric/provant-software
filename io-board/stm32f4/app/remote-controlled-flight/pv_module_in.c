@@ -26,12 +26,13 @@
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 #define MODULE_PERIOD	   10//ms
+#define IMU_READ         FALSE
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 portTickType lastWakeTime;
 pv_msg_input oInputData;
-//GPIOPin debugPin;
+GPIOPin LED4;
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 /* Exported functions definitions --------------------------------------------*/
@@ -56,6 +57,7 @@ void module_in_init()
 	c_rc_receiver_init();
 
   /* Pin for debug */
+  LED4 = c_common_gpio_init(GPIOD, GPIO_Pin_12, GPIO_Mode_OUT); //LD4 
   //debugPin = c_common_gpio_init(GPIOE, GPIO_Pin_13, GPIO_Mode_OUT);
 
   /* Resevar o espaco para a variavel compartilhada */
@@ -71,44 +73,43 @@ void module_in_init()
   */
 void module_in_run() 
 {
-  unsigned int heartBeat=0;
   float rpy[3]={};
 
 	while(1)
 	{
-    oInputData.heartBeat=heartBeat+=1;
+    /* Leitura do numero de ciclos atuais */
+    lastWakeTime = xTaskGetTickCount();
+
+    oInputData.heartBeat+=1;
 
     /* toggle pin for debug */
-    //c_common_gpio_toggle(debugPin);
-
-    /* Leitura do numero de ciclos atuais */
-		lastWakeTime = xTaskGetTickCount();
+    c_common_gpio_toggle(LED4);
 
     /* Pega e trata os valores da imu */
-		c_io_imu_getRaw(oInputData.imuOutput.accRaw, oInputData.imuOutput.gyrRaw, oInputData.imuOutput.magRaw);
-    oInputData.imuOutput.sampleTime =xTaskGetTickCount() -lastWakeTime;
+    #if IMU_READ
+		  c_io_imu_getRaw(oInputData.imuOutput.accRaw, oInputData.imuOutput.gyrRaw, oInputData.imuOutput.magRaw);
+    #endif
+
+    oInputData.imuOutput.sampleTime      =xTaskGetTickCount() -lastWakeTime;
     c_io_imu_ComplimentaryRPY(rpy,oInputData.imuOutput.accRaw,oInputData.imuOutput.gyrRaw,oInputData.imuOutput.magRaw);
-    oInputData.attitude.roll  =rpy[0];
-    oInputData.attitude.pitch =rpy[1];
-    oInputData.attitude.yaw   =rpy[2];
+    oInputData.attitude.roll             =rpy[0];
+    oInputData.attitude.pitch            =rpy[1];
+    oInputData.attitude.yaw              =rpy[2];
 
     /* Realiza a laitura dos canais do radio-controle */
-		oInputData.receiverOutput.joystick[0]=c_rc_receiver_getChannel(C_RC_CHANNEL_THROTTLE);
-		oInputData.receiverOutput.joystick[1]=c_rc_receiver_getChannel(C_RC_CHANNEL_PITCH);
-		oInputData.receiverOutput.joystick[2]=c_rc_receiver_getChannel(C_RC_CHANNEL_ROLL);
-		oInputData.receiverOutput.joystick[3]=c_rc_receiver_getChannel(C_RC_CHANNEL_YAW);
-		oInputData.receiverOutput.vrPot		   =c_rc_receiver_getChannel(C_RC_CHANNEL_A);
-		oInputData.receiverOutput.aButton	   =c_rc_receiver_getChannel(C_RC_CHANNEL_VR);
-    oInputData.receiverOutput.sampleTime =xTaskGetTickCount();
+		oInputData.receiverOutput.joystick[0] =c_rc_receiver_getChannel(C_RC_CHANNEL_THROTTLE);
+		oInputData.receiverOutput.joystick[1] =c_rc_receiver_getChannel(C_RC_CHANNEL_PITCH);
+		oInputData.receiverOutput.joystick[2] =c_rc_receiver_getChannel(C_RC_CHANNEL_ROLL);
+		oInputData.receiverOutput.joystick[3] =c_rc_receiver_getChannel(C_RC_CHANNEL_YAW);
+		oInputData.receiverOutput.vrPot		    =c_rc_receiver_getChannel(C_RC_CHANNEL_A);
+		oInputData.receiverOutput.aButton	    =c_rc_receiver_getChannel(C_RC_CHANNEL_VR);
+    oInputData.receiverOutput.sampleTime  =xTaskGetTickCount();
 
     /* Executra a leitura do sonar */
-		oInputData.sonarOutput.altitude      =c_io_sonar_read();
-    oInputData.sonarOutput.sampleTime    =xTaskGetTickCount() - lastWakeTime;
+		oInputData.sonarOutput.altitude       =c_io_sonar_read();
+    oInputData.sonarOutput.sampleTime     =xTaskGetTickCount() - lastWakeTime;
 
-    oInputData.cicleTime                 =xTaskGetTickCount() - lastWakeTime;
-
-    /* toggle pin for debug */
-    //c_common_gpio_toggle(debugPin);
+    oInputData.cicleTime                  =xTaskGetTickCount() - lastWakeTime;
 
     /* Realiza o trabalho de mutex */
 		if(pv_interface_in.oInputData != 0)

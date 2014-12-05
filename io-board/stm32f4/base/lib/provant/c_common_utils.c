@@ -117,10 +117,10 @@ void c_common_utils_enSysTick() {
 	CORE_SysTickEn();
 }
 
-//long c_common_utils_micros() {
-//	CORE_SysTickEn();
-//	return (long)(CORE_GetSysTick()/(SystemCoreClock/1000000));
-//}
+long c_common_utils_micros() {
+	CORE_SysTickEn();
+	return (long)(CORE_GetSysTick()/(SystemCoreClock/1000000));
+}
 
 /** \brief Retorna o valor em milissegundos desde o disparo do SysTick.
  *
