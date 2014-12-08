@@ -25,6 +25,7 @@
 /* Private define ------------------------------------------------------------*/
 #define MODULE_PERIOD	     100//ms
 #define USART_BAUDRATE     460800
+#define MULTIWII_STACK_ON  0
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 portTickType lastWakeTime;
@@ -79,16 +80,29 @@ void module_do_run()
 		arm_scale_f32(iInputData.imuOutput.gyrRaw,RAD_TO_DEG,iInputData.imuOutput.gyrRaw,3);
     int channel[]={iInputData.receiverOutput.joystick[0],iInputData.receiverOutput.joystick[1],iInputData.receiverOutput.joystick[2],iInputData.receiverOutput.joystick[3],iInputData.receiverOutput.aButton,iInputData.receiverOutput.bButton,iInputData.receiverOutput.vrPot};
 
-		c_common_datapr_multwii_raw_imu(iInputData.imuOutput.accRaw,iInputData.imuOutput.gyrRaw,iInputData.imuOutput.magRaw);
-    c_common_datapr_multwii_attitude(iInputData.attitude.roll*RAD_TO_DEG,iInputData.attitude.pitch*RAD_TO_DEG,iInputData.attitude.yaw*RAD_TO_DEG);
-		c_common_datapr_multwii2_rcNormalize(channel);
-    c_common_datapr_multwii_altitude(iInputData.sonarOutput.altitude,0);
-    c_common_datapr_multwii_debug( iInputData.cicleTime,iControlOutputData.heartBeat,iControlOutputData.cicleTime,heartBeat);
-    c_common_datapr_multwii_sendstack(USART2);
-  
-    c_common_datapr_multwii2_sendControldatain(iControlOutputData.vantBehavior.rpy, iControlOutputData.vantBehavior.drpy, iControlOutputData.vantBehavior.xyz, iControlOutputData.vantBehavior.dxyz);
-    c_common_datapr_multwii2_sendControldataout(iControlOutputData.actuation.servoPosition, iControlOutputData.actuation.escNewtons, iControlOutputData.actuation.escRpm);
-    c_common_datapr_multwii_sendstack(USART2);
+    #if MULTIWII_STACK_ON
+      /* Aqui os dados são alocados na pilha do multiwii, logo tome cuidado para não sobrecarregar a mesma, foi utilizados dois sendstack para resovler este problema*/
+  		c_common_datapr_multwii_raw_imu(iInputData.imuOutput.accRaw,iInputData.imuOutput.gyrRaw,iInputData.imuOutput.magRaw);
+      c_common_datapr_multwii_attitude(iInputData.attitude.roll*RAD_TO_DEG,iInputData.attitude.pitch*RAD_TO_DEG,iInputData.attitude.yaw*RAD_TO_DEG);
+  		c_common_datapr_multwii2_rcNormalize(channel);
+      c_common_datapr_multwii_altitude(iInputData.sonarOutput.altitude,0);
+      c_common_datapr_multwii_debug( iInputData.cicleTime,iControlOutputData.heartBeat,iControlOutputData.cicleTime,heartBeat);
+      c_common_datapr_multwii_sendstack(USART2);
+    
+      c_common_datapr_multwii2_sendControldatain(iControlOutputData.vantBehavior.rpy, iControlOutputData.vantBehavior.drpy, iControlOutputData.vantBehavior.xyz, iControlOutputData.vantBehavior.dxyz);
+      c_common_datapr_multwii2_sendControldataout(iControlOutputData.actuation.servoPosition, iControlOutputData.actuation.escNewtons, iControlOutputData.actuation.escRpm);
+      c_common_datapr_multwii_sendstack(USART2);
+    #endif
+
+    if(c_common_usart_available(USART2))
+    {
+      unsigned char charesco = c_common_usart_read(USART2);
+      c_common_usart_putchar(USART2,charesco);
+      c_common_usart_puts(USART2,"\n\r");
+    }
+
+    //if(iControlOutputData.heartBeat>1000)
+    //  c_common_utils_resetSystem(); //reset program 
 
 		vTaskDelayUntil( &lastWakeTime, (MODULE_PERIOD / portTICK_RATE_MS));
 	}
