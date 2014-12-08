@@ -159,6 +159,7 @@ int main(void)
     /* Connect modules: interface1.o* = interface2.i* */ 
     pv_interface_do.iInputData  = pv_interface_in.oInputData; 
     pv_interface_co.iInputData  = pv_interface_in.oInputData; 
+    pv_interface_co.iMsg        = pv_interface_do.oMsg; 
     pv_interface_do.iControlOutputData  = pv_interface_co.oControlOutputData; 
 
     /* create tasks 

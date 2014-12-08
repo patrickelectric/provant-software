@@ -25,11 +25,12 @@
 /* Private define ------------------------------------------------------------*/
 #define MODULE_PERIOD	     100//ms
 #define USART_BAUDRATE     460800
-#define MULTIWII_STACK_ON  0
+#define MULTIWII_STACK_ON  1
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 portTickType lastWakeTime;
 pv_msg_input iInputData;
+pv_msg_do    oMsg;
 pv_msg_controlOutput iControlOutputData; 
 GPIOPin LED3;
 /* Private function prototypes -----------------------------------------------*/
@@ -50,6 +51,7 @@ void module_do_init()
   /* Reserva o local de memoria compartilhado */
 	pv_interface_do.iInputData          = xQueueCreate(1, sizeof(pv_msg_input));
   pv_interface_do.iControlOutputData  = xQueueCreate(1, sizeof(pv_msg_controlOutput));
+  pv_interface_do.oMsg                = xQueueCreate(1, sizeof(pv_msg_do));
 
   /* Pin for debug */
   LED3 = c_common_gpio_init(GPIOD, GPIO_Pin_13, GPIO_Mode_OUT); //LD3 
@@ -73,9 +75,13 @@ void module_do_run()
     /* toggle pin for debug */
     c_common_gpio_toggle(LED3); 
 
+
+    //take data from threads
 		xQueueReceive(pv_interface_do.iInputData, &iInputData, 0);
     xQueueReceive(pv_interface_do.iControlOutputData, &iControlOutputData, 0);
+    xQueueReceive(pv_interface_do.oMsg, &oMsg, 0);
 
+    //muultiplica as matrizes para trasformar em graus
 		arm_scale_f32(iInputData.imuOutput.accRaw,RAD_TO_DEG,iInputData.imuOutput.accRaw,3);
 		arm_scale_f32(iInputData.imuOutput.gyrRaw,RAD_TO_DEG,iInputData.imuOutput.gyrRaw,3);
     int channel[]={iInputData.receiverOutput.joystick[0],iInputData.receiverOutput.joystick[1],iInputData.receiverOutput.joystick[2],iInputData.receiverOutput.joystick[3],iInputData.receiverOutput.aButton,iInputData.receiverOutput.bButton,iInputData.receiverOutput.vrPot};
@@ -94,15 +100,27 @@ void module_do_run()
       c_common_datapr_multwii_sendstack(USART2);
     #endif
 
+
+    #if 1
     if(c_common_usart_available(USART2))
     {
       unsigned char charesco = c_common_usart_read(USART2);
-      c_common_usart_putchar(USART2,charesco);
-      c_common_usart_puts(USART2,"\n\r");
+      
+      if(charesco=='r')
+        c_common_utils_resetSystem(); //reset program       
+      else 
+      if(charesco=='s')
+        oMsg.behavior=1;              //desliga atuadores
+      else
+        oMsg.behavior=0;              //tudo normal
     }
+    #endif
 
     //if(iControlOutputData.heartBeat>1000)
-    //  c_common_utils_resetSystem(); //reset program 
+    //  c_common_utils_resetSystem(); //reset program
+
+    if(pv_interface_do.oMsg != 0)
+      xQueueOverwrite(pv_interface_do.oMsg, &oMsg); 
 
 		vTaskDelayUntil( &lastWakeTime, (MODULE_PERIOD / portTICK_RATE_MS));
 	}

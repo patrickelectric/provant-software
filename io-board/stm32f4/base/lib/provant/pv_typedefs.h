@@ -105,7 +105,7 @@ typedef struct
   float dxyz[3];
 } pv_type_vantBehavior;
 
-/** \brief Estrutura para dados de comportamento.*/
+/** \brief Estrutura para dados de comportamento GPS.*/
 typedef struct
 {
   int timeStamp;
@@ -169,6 +169,12 @@ typedef struct
   unsigned int cicleTime;
   unsigned int heartBeat;
 } pv_msg_sm;
+
+/** \brief Estrutura de msg decodificada para controle da interface gráfica.*/
+typedef struct
+{
+  unsigned int behavior;
+} pv_msg_do;
 
 /* Exported constants --------------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/

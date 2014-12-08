@@ -31,6 +31,7 @@
 /* Private variables ---------------------------------------------------------*/
 portTickType lastWakeTime;
 pv_msg_input iInputData;
+pv_msg_do    iMsg;
 pv_msg_controlOutput oControlOutputData;
 GPIOPin LED5;
 /* Inboxes buffers */
@@ -75,6 +76,7 @@ void module_co_init()
   LED5 = c_common_gpio_init(GPIOD, GPIO_Pin_14, GPIO_Mode_OUT); //LD5 
 
   pv_interface_co.iInputData          = xQueueCreate(1, sizeof(pv_msg_input));
+  pv_interface_co.iMsg                = xQueueCreate(1, sizeof(pv_msg_do));
   pv_interface_co.oControlOutputData  = xQueueCreate(1, sizeof(pv_msg_controlOutput));
 }
 
@@ -90,7 +92,7 @@ void module_co_init()
   */
 void module_co_run()
 {
-
+  bool STOPSYSTEMNOW=false;
   while(1)
   {
     /* Leitura do numero de ciclos atuais */
@@ -101,6 +103,13 @@ void module_co_run()
 
     /* Passa os valores davariavel compartilha para a variavel iInputData */
     xQueueReceive(pv_interface_co.iInputData, &iInputData, 0);
+    xQueueReceive(pv_interface_co.iMsg, &iMsg, 0);
+
+    if(iMsg.behavior==1 || STOPSYSTEMNOW==true)
+    {
+      oControlOutputData.heartBeat=0;
+      STOPSYSTEMNOW=true;
+    }
 
     /* Escrita dos servos */
     #if SERVO_ON

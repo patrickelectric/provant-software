@@ -35,6 +35,7 @@
 struct pv_interface_co 
 {
   xQueueHandle iInputData;  
+  xQueueHandle iMsg;  
   xQueueHandle oControlOutputData;  
 } pv_interface_co;
 /* Exported constants --------------------------------------------------------*/
