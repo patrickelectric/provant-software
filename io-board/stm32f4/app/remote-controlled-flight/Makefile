@@ -115,7 +115,7 @@ OBJDUMP = $(TOOLCHAIN_PREFIX)objdump
 NM      = $(TOOLCHAIN_PREFIX)nm
 
 # compiler flags
-CFLAGS  = -T$(CORE)/system/stm32_flash.ld -g
+CFLAGS  = -g -T$(CORE)/system/stm32_flash.ld 
 CFLAGS += -mlittle-endian -mthumb -mcpu=$(MCU) -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 CFLAGS += -I. $(patsubst %,-I%,$(INCDIRS))
@@ -123,7 +123,7 @@ CFlAGS += -DARM_MATH_CM4 -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING
 # verbose flags, all may be commented out
 #CFLAGS += -Wall  -Wunused-value -Wunused-variable -Wunused-but-set-variable #-ftime-report
 # cpp related flags
-CFLAGS +=  -O0 -ffunction-sections -fdata-sections -fno-exceptions --specs=nano.specs -Wl,--gc-sections #-Og
+CFLAGS += -Og -O0 -ffunction-sections -fdata-sections -fno-exceptions --specs=nano.specs -Wl,--gc-sections
 CFLAGS += -std=c99 
 CFLAGS += $(BOARD)
 CFLAGS +=-D__FPU_PRESENT
