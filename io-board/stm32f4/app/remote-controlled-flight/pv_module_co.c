@@ -25,7 +25,7 @@
 /* Private define ------------------------------------------------------------*/
 #define MODULE_PERIOD	   10//ms
 #define ESC_ON           1
-#define SERVO_ON         0
+#define SERVO_ON         1
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -98,13 +98,14 @@ void module_co_run()
     /* Leitura do numero de ciclos atuais */
     lastWakeTime = xTaskGetTickCount();
 
-    /* toggle pin for debug */
+    /* Toggle pin for debug */
     c_common_gpio_toggle(LED5);
 
     /* Passa os valores davariavel compartilha para a variavel iInputData */
     xQueueReceive(pv_interface_co.iInputData, &iInputData, 0);
     xQueueReceive(pv_interface_co.iMsg, &iMsg, 0);
 
+    /* Se behavior for igual a 0, fazemos com que a variavel STOPSYSTEMNOW seja verdadeiro */
     if(iMsg.behavior==1 || STOPSYSTEMNOW==true)
     {
       oControlOutputData.heartBeat=0;
@@ -113,31 +114,22 @@ void module_co_run()
 
     /* Escrita dos servos */
     #if SERVO_ON
-      if(iInputData.receiverOutput.joystick[0]<45 && iInputData.receiverOutput.joystick[0]>-45)
+      if(iInputData.receiverOutput.joystick[0]<45 && iInputData.receiverOutput.joystick[0]>-45 && !STOPSYSTEMNOW)
       {
         c_io_rx24f_move(2, 150+iInputData.receiverOutput.joystick[0]);
         c_io_rx24f_move(1, 130+iInputData.receiverOutput.joystick[0]);
       }
     #endif
 
-    /* Escrita dos escs */
-    #if 1
-      //if (iInputData.receiverOutput.vrPot!=0)
-      //{
+    /* Escrita e leitura dos escs */
+    #if ESC_ON
+      if(!STOPSYSTEMNOW)
+      {
         c_io_blctrl_setSpeed(0, 0  );
         c_common_utils_delayus(10);
         c_io_blctrl_setSpeed(1, 0 );
-      //}
-      /*
-      else
-      {
-        c_io_blctrl_setSpeed(0, 0 );
-        c_common_utils_delayus(10);
-        c_io_blctrl_setSpeed(1, 0 );
+        //c_io_blctrl_updateBuffer(1);
       }
-      */
-
-      //c_io_blctrl_updateBuffer(1);
     #endif
 
     /*
