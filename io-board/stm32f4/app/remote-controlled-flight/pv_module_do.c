@@ -26,6 +26,7 @@
 #define MODULE_PERIOD	     100//ms
 #define USART_BAUDRATE     460800
 #define MULTIWII_STACK_ON  1
+#define CONTROL_MSG        1
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 portTickType lastWakeTime;
@@ -101,23 +102,25 @@ void module_do_run()
     #endif
 
 
-    #if 1
-    if(c_common_usart_available(USART2))
-    {
-      unsigned char charesco = c_common_usart_read(USART2);
-      
-      if(charesco=='r')
-        c_common_utils_resetSystem(); //reset program       
-      else 
-      if(charesco=='s')
-        oMsg.behavior=1;              //desliga atuadores
-      else
-        oMsg.behavior=0;              //tudo normal
-    }
+    #if CONTROL_MSG
+      /*Estrutura simples para controle do vant via a interface gráfica
+      Tem que ser reifeito, enviando a msg para a thread de SM onde todas essas coisas
+      devem ser genrenciadas, alem de empacotar as msgs dentro do protocoo e criar a tabela de msgs
+      assim como a decodificação das mesmas tanto na  groundstation quanto aqui no ARM.
+      */
+      if(c_common_usart_available(USART2))
+      {
+        unsigned char charesco = c_common_usart_read(USART2);
+        
+        if(charesco=='r')
+          c_common_utils_resetSystem(); //reset program       
+        else 
+        if(charesco=='s')
+          oMsg.behavior=1;              //desliga atuadores
+        else
+          oMsg.behavior=0;              //tudo normal
+      }
     #endif
-
-    //if(iControlOutputData.heartBeat>1000)
-    //  c_common_utils_resetSystem(); //reset program
 
     if(pv_interface_do.oMsg != 0)
       xQueueOverwrite(pv_interface_do.oMsg, &oMsg); 

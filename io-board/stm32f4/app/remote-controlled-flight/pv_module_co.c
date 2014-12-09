@@ -53,8 +53,8 @@ void module_co_init()
 {
 
   /* Inicializar os escs*/
-  c_common_i2c_init(I2C3);
-  c_io_blctrl_init_i2c(I2C3);
+  c_common_i2c_init(I2C1);
+  c_io_blctrl_init_i2c(I2C1);
 
   /* Inicializar os servos */
   c_io_rx24f_init(1000000);
@@ -124,9 +124,9 @@ void module_co_run()
     #if 1
       //if (iInputData.receiverOutput.vrPot!=0)
       //{
-        c_io_blctrl_setSpeed(0, 10  );
+        c_io_blctrl_setSpeed(0, 0  );
         c_common_utils_delayus(10);
-        c_io_blctrl_setSpeed(1, 10 );
+        c_io_blctrl_setSpeed(1, 0 );
       //}
       /*
       else

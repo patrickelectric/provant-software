@@ -47,8 +47,8 @@ GPIOPin LED4;
 void module_in_init() 
 {
 	/* Inicialização da imu */
-	c_common_i2c_init(I2C3); 
-	c_io_imu_init(I2C3); 
+	c_common_i2c_init(I2C1); 
+	c_io_imu_init(I2C1); 
 
   /* Inicializador do sonar */
   c_io_sonar_init();
